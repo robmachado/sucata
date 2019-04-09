@@ -1,0 +1,42 @@
+{
+    "name": "plastfoam/sucata",
+    "type": "library",
+    "description": "Controle de Sucata",
+    "keywords": [
+        "bootstrap",
+        "php"
+    ],
+    "license": [
+        "GPL-3.0+",
+        "LGPL-3.0+"
+    ],
+    "authors": [
+        {
+            "name": "Roberto L. Machado",
+            "email": "linux.rlm@gmail.com.br",
+            "homepage": "http://www.nfephp.org",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": ">=7.1",
+        "phpoffice/phpspreadsheet": "dev-master",
+        "nesbot/carbon": "dev-master"
+    },
+    "require-dev": {
+    },
+    "autoload": {
+        "psr-4": {
+          "Sucata\\": "src/"  
+        },
+        "psr-0": {
+            "": ["src/", "test/"]
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.0.x-dev"
+        }
+    },
+    "minimum-stability": "dev"
+}
