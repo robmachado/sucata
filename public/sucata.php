@@ -32,9 +32,9 @@ if (!empty($dtini) && !empty($dtfim)) {
      */
     $config = json_encode(
         [
-            'host' => 'localhost',
-            'user'=>'root',
-            'pass'=>'monitor5',
+            'host' => 'mercurio',
+            'user'=>'etiqueta',
+            'pass'=>'forever',
             'db'=>'blabel'
         ]
     );
