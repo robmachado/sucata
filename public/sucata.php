@@ -43,6 +43,11 @@ if (!empty($dtini) && !empty($dtfim)) {
     $resp = $dbase->query($sql);
     $dados = [];
     $i = 0;
+    if (empty($resp)) {
+        echo "<H1>Não foram localidados registros para esse período.</H1>";
+        die;
+    }
+    
     foreach($resp as $lin) {
         $dados[$i]['data'] = isset($lin['date']) ? $lin['date'] : '';
         $dados[$i]['op'] = isset($lin['orders_id']) ? $lin['orders_id'] : '';
