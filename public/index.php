@@ -8,6 +8,9 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xls;
 use Carbon\Carbon;
 
+$base = basename(__FILE__);
+
+
 $dtini = filter_input(INPUT_POST, 'dtini', FILTER_SANITIZE_STRING);
 $dtfim = filter_input(INPUT_POST, 'dtfim', FILTER_SANITIZE_STRING);
 $complete = filter_input(INPUT_POST, 'complete', FILTER_SANITIZE_STRING);
@@ -44,7 +47,7 @@ if (!empty($dtini) && !empty($dtfim)) {
     $dados = [];
     $i = 0;
     if (empty($resp)) {
-        echo "<H1>Não foram localidados registros para esse período.</H1>";
+        echo "<center><H1>Não foram localizados registros para esse período.</H1></center>";
         die;
     }
     
@@ -121,7 +124,7 @@ $body = "
         </div>
         <div class=\"col-md-4\"></div>
     </div>
-    <form role=\"form\" method=\"POST\" action=\"sucata.php\" >
+    <form role=\"form\" method=\"POST\" action=\"{$base}\" >
     <div class=\"row\">
         <div class=\"col-md-2\"></div>
         <div class=\"col-md-8\">
