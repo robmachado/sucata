@@ -35,7 +35,7 @@ if (!empty($dtini) && !empty($dtfim)) {
      */
     $config = json_encode(
         [
-            'host' => 'mercurio',
+            'host' => '192.168.1.4',
             'user'=>'etiqueta',
             'pass'=>'forever',
             'db'=>'blabel'
