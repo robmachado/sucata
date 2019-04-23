@@ -21,7 +21,8 @@
     "require": {
         "php": ">=7.1",
         "phpoffice/phpspreadsheet": "dev-master",
-        "nesbot/carbon": "dev-master"
+        "nesbot/carbon": "dev-master",
+        "vlucas/phpdotenv": "^3.3@dev"
     },
     "require-dev": {
     },

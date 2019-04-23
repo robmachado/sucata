@@ -3,9 +3,11 @@ ini_set("display_errors", 1);
 error_reporting(E_ALL);
 require_once '../bootstrap.php';
 
-use Sucata\DBase\DBase;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xls;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+
 use Carbon\Carbon;
 
 $base = basename(__FILE__);
@@ -33,24 +35,13 @@ if (!empty($dtini) && !empty($dtfim)) {
      * type = tipo de sucata 1-APARA e 2-REFILE
      * quality = qualidade da sucata 1-TRANSPARENTE 2-COLORIDO 3-EVA
      */
-    $config = json_encode(
-        [
-            'host' => '192.168.1.4',
-            'user'=>'etiqueta',
-            'pass'=>'forever',
-            'db'=>'blabel'
-        ]
-    );
-    $dbase = new DBase($config);
-    $dbase->connect();
-    $resp = $dbase->query($sql);
-    $dados = [];
-    $i = 0;
+    $resp = $db->query($sql);
     if (empty($resp)) {
         echo "<center><H1>Não foram localizados registros para esse período.</H1></center>";
         die;
     }
-    
+    $dados = [];
+    $i = 0;
     foreach($resp as $lin) {
         $dados[$i]['data'] = isset($lin['date']) ? $lin['date'] : '';
         $dados[$i]['op'] = isset($lin['orders_id']) ? $lin['orders_id'] : '';
@@ -60,6 +51,11 @@ if (!empty($dtini) && !empty($dtfim)) {
         $dados[$i]['peso'] = isset($lin['net']) ? $lin['net'] : $lin['peso'];
         $i++;
     }
+    //echo "<pre>";
+    //print_r($dados);
+    //echo "</pre>";
+    //die;
+    
     
     $spreadsheet = new Spreadsheet();
     $sheet = $spreadsheet->getActiveSheet();
@@ -71,6 +67,20 @@ if (!empty($dtini) && !empty($dtfim)) {
     $sheet->setCellValue('B2', 'Relatório de Sucata');
     $sheet->setCellValue('B3', "Período: " . (new Carbon($dtini))->format('d/m/Y') . " até " . (new Carbon($dtfim))->format('d/m/Y'));
     $sheet->setCellValue('B4', $tipo);
+    
+    $styleArray = [
+        'font' => [
+            'bold' => true,
+        ],
+        'alignment' => [
+            'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+        ],
+        'fill' => [
+            'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_PATTERN_DARKGRAY
+        ],
+    ];
+
+    
     
     if (!$complete) {
         $sheet->setCellValue('B6', 'Setor');
@@ -85,25 +95,42 @@ if (!empty($dtini) && !empty($dtfim)) {
             $sheet->setCellValue("E{$i}", $d['peso']);
             $i++;
         }
+        $sheet->getStyle("E7:E{$i}")
+            ->getNumberFormat()
+            ->setFormatCode('#,##0.0 "kg"');
+        $sheet->getStyle("B6:D{$i}")
+            ->getAlignment()
+            ->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('B6:E6')->applyFromArray($styleArray);
     } else {
         $sheet->setCellValue('B6', 'Data');
         $sheet->setCellValue('C6', 'OP');
         $sheet->setCellValue('D6', 'Setor');
-        $sheet->setCellValue('C6', 'Tipo');
-        $sheet->setCellValue('D6', 'Qualidade');
-        $sheet->setCellValue('E6', 'Peso');
+        $sheet->setCellValue('E6', 'Tipo');
+        $sheet->setCellValue('F6', 'Qualidade');
+        $sheet->setCellValue('G6', 'Peso');
         $i = 7;
         foreach($dados as $d) {
             $c = new Carbon($d['data']);
             $sheet->setCellValue("B{$i}", $c->format('d/m/Y'));
             $sheet->setCellValue("C{$i}", $d['op']);
             $sheet->setCellValue("D{$i}", $d['setor']);
-            $sheet->setCellValue("C{$i}", $d['tipo']);
-            $sheet->setCellValue("D{$i}", $d['qual']);
-            $sheet->setCellValue("E{$i}", $d['peso']);
+            $sheet->setCellValue("E{$i}", $d['tipo']);
+            $sheet->setCellValue("F{$i}", $d['qual']);
+            $sheet->setCellValue("G{$i}", $d['peso']);
             $i++;
         }
+        $sheet->getStyle("G7:G{$i}")
+            ->getNumberFormat()
+            ->setFormatCode('#,##0.0 "kg"');
+        $sheet->getStyle("B6:F{$i}")
+            ->getAlignment()
+            ->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('B6:G6')->applyFromArray($styleArray);
     }
+
+    
+    
     
     $writer = new Xls($spreadsheet);
     
