@@ -21,12 +21,14 @@ class DBase
         return self::$instance;
     }
 
-    private function __construct()
+    public function __construct($host = '', $dbname = '', $user = '', $pass = '')
     {
-        $host = getenv('DB_HOST');
-        $dbname = getenv('DB_NAME');
-        $user = getenv('DB_USER');
-        $pass = getenv('DB_PASS');
+        if (empty($host)) {
+            $host = getenv('DB_HOST');
+            $dbname = getenv('DB_NAME');
+            $user = getenv('DB_USER');
+            $pass = getenv('DB_PASS');
+        }    
         $dsn = "mysql:host={$host};dbname={$dbname}";
 
         try {
