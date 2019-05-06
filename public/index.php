@@ -46,9 +46,27 @@ if (!empty($dtini) && !empty($dtfim)) {
         $dados[$i]['data'] = isset($lin['date']) ? $lin['date'] : '';
         $dados[$i]['op'] = isset($lin['orders_id']) ? $lin['orders_id'] : '';
         $dados[$i]['setor'] = isset($lin['sector']) ? $lin['sector'] : '';
-        $dados[$i]['tipo'] = $lin['type'] == 1 ? 'APARA' : 'REFILE';
+        //$dados[$i]['tipo'] = $lin['type'] == 1 ? 'APARA' : 'REFILE';
         $dados[$i]['qual'] = $lin['quality'] == 1 ? 'TRANSPARENTE' : ($lin['quality'] == 3 ? 'EVA' : 'COLORIDO'); 
         $dados[$i]['peso'] = isset($lin['net']) ? $lin['net'] : $lin['peso'];
+        
+        $tipo = $lin['type'];
+        switch ($tipo) {
+            case 1:
+                $dados[$i]['tipo'] = 'APARA';
+                break;
+            case 2:
+                $dados[$i]['tipo'] = 'REFILE';
+                break;
+            case 3:
+                $dados[$i]['tipo'] = 'EMBALAGEM';
+                break;
+            case 4:
+                $dados[$i]['tipo'] = 'BORRA';
+                break;
+            default:
+                $dados[$i]['tipo'] = 'APARA';
+        }
         $i++;
     }
     //echo "<pre>";
