@@ -21,7 +21,8 @@ $dtfim = filter_input(INPUT_POST, 'dtfim', FILTER_SANITIZE_STRING);
 if (!empty($dtini) && !empty($dtfim)) {
     $dti = Carbon::createFromFormat('Y-m-d H:i:s', "{$dtini} 00:00:00")->format('Y-m-d H:i:s');
     $dtf = Carbon::createFromFormat('Y-m-d H:i:s', "{$dtfim} 23:59:59")->format('Y-m-d H:i:s');
-    $sql = "SELECT * FROM apontamentos WHERE data >= '$dti' AND data <= '$dtf' ORDER BY data, shifttimeini, maq;";
+    //$sql = "SELECT * FROM apontamentos WHERE data >= '$dti' AND data <= '$dtf' ORDER BY data, shifttimeini, maq;";
+    $sql = "SELECT ord.cliente, ord.nome, apo.* FROM apontamentos apo LEFT JOIN ordens ord ON ord.id = apo.numop WHERE apo.data >= '2019-05-01' AND apo.data <= '2019-05-14' ORDER BY apo.maq, apo.data, apo.shifttimeini;";
     /**
      * type = tipo de sucata 1-APARA e 2-REFILE
      * quality = qualidade da sucata 1-TRANSPARENTE 2-COLORIDO 3-EVA
@@ -74,8 +75,18 @@ if (!empty($dtini) && !empty($dtfim)) {
     $sheet->setCellValue('N6', 'Velocidade');
     $sheet->setCellValue('O6', 'Refile');
     $sheet->setCellValue('P6', 'Aparas');
+    $sheet->setCellValue('Q6', 'Peso Total');
+    $sheet->setCellValue('R6', 'Cliente');
+    $sheet->setCellValue('S6', 'Descrição');
     $i = 7;
     foreach ($dados as $d) {
+        
+        $peso = 0;
+        if ($d['uni'] == 'KG') {
+            $peso = $d['qtd'];
+        } elseif ($d['uni'] == 'PC' && is_numeric($d['qtd']) && is_numeric($d['fator'])) {
+            $peso = $d['fator'] * $d['qtd']/1000;
+        }
         $dt = Carbon::createFromFormat('Y-m-d', $d['data'])->format('d/m/Y');
         $sheet->setCellValue("B{$i}", $d['maq']);
         $sheet->setCellValue("C{$i}", $dt);
@@ -92,6 +103,10 @@ if (!empty($dtini) && !empty($dtfim)) {
         $sheet->setCellValue("N{$i}", $d['velocidade']);
         $sheet->setCellValue("O{$i}", $d['refile']);
         $sheet->setCellValue("P{$i}", $d['aparas']);
+        
+        $sheet->setCellValue("Q{$i}", $peso);
+        $sheet->setCellValue("R{$i}", $d['cliente']);
+        $sheet->setCellValue("S{$i}", $d['nome']);
         $i++;
     }
     //$sheet->getStyle("E7:E{$i}")
@@ -101,7 +116,7 @@ if (!empty($dtini) && !empty($dtfim)) {
     //    ->getAlignment()
     //    ->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
-    $sheet->getStyle('B6:P6')->applyFromArray($styleArray);
+    $sheet->getStyle('B6:S6')->applyFromArray($styleArray);
 
     $writer = new Xls($spreadsheet);
 
