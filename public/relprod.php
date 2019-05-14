@@ -76,8 +76,9 @@ if (!empty($dtini) && !empty($dtfim)) {
     $sheet->setCellValue('O6', 'Refile');
     $sheet->setCellValue('P6', 'Aparas');
     $sheet->setCellValue('Q6', 'Peso Total');
-    $sheet->setCellValue('R6', 'Cliente');
-    $sheet->setCellValue('S6', 'Descrição');
+    $sheet->setCellValue('R6', 'Metragem');
+    $sheet->setCellValue('S6', 'Cliente');
+    $sheet->setCellValue('T6', 'Descrição');
     $i = 7;
     foreach ($dados as $d) {
         
@@ -85,8 +86,17 @@ if (!empty($dtini) && !empty($dtfim)) {
         if ($d['uni'] == 'KG') {
             $peso = $d['qtd'];
         } elseif ($d['uni'] == 'PC' && is_numeric($d['qtd']) && is_numeric($d['fator'])) {
-            $peso = $d['fator'] * $d['qtd']/1000;
+            $peso = round($d['fator'] * $d['qtd']/1000, 2);
         }
+        $metragem = '';
+        if (substr($d['maq'], 0, 1) != 'C'
+            && is_numeric($d['qtd'])
+            && is_numeric($d['fator'])
+            && $d['fator'] > 0
+        ) {
+            $metragem = round(($d['qtd'] * 1000)/$d['fator'], 0);
+        }
+        
         $dt = Carbon::createFromFormat('Y-m-d', $d['data'])->format('d/m/Y');
         $sheet->setCellValue("B{$i}", $d['maq']);
         $sheet->setCellValue("C{$i}", $dt);
@@ -105,8 +115,9 @@ if (!empty($dtini) && !empty($dtfim)) {
         $sheet->setCellValue("P{$i}", $d['aparas']);
         
         $sheet->setCellValue("Q{$i}", $peso);
-        $sheet->setCellValue("R{$i}", $d['cliente']);
-        $sheet->setCellValue("S{$i}", $d['nome']);
+        $sheet->setCellValue("R{$i}", $metragem);
+        $sheet->setCellValue("S{$i}", $d['cliente']);
+        $sheet->setCellValue("T{$i}", $d['nome']);
         $i++;
     }
     //$sheet->getStyle("E7:E{$i}")
@@ -116,7 +127,7 @@ if (!empty($dtini) && !empty($dtfim)) {
     //    ->getAlignment()
     //    ->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
-    $sheet->getStyle('B6:S6')->applyFromArray($styleArray);
+    $sheet->getStyle('B6:T6')->applyFromArray($styleArray);
 
     $writer = new Xls($spreadsheet);
 
