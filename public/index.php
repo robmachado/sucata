@@ -21,10 +21,11 @@ if (!empty($dtini) && !empty($dtfim)) {
     $dti = Carbon::createFromFormat('Y-m-d H:i:s', "{$dtini} 00:00:00")->format('Y-m-d H:i:s');
     $dtf = Carbon::createFromFormat('Y-m-d H:i:s', "{$dtfim} 23:59:59")->format('Y-m-d H:i:s');
     if ($complete) {
-        $tipo = "COMPLETO";
-        $sql = "SELECT * FROM appoint WHERE date >= '$dti' AND date <= '$dtf' ORDER BY orders_id, sector;";
+        $tiporel = "COMPLETO";
+        $sql = "SELECT ord.customer, ord.code, ord.description, ap.*  FROM appoint ap INNER JOIN orders ord ON ord.id = ap.orders_id WHERE date >= '$dti' AND date <= '$dtf' ORDER BY orders_id, sector;";
+        //$sql = "SELECT * FROM appoint WHERE date >= '$dti' AND date <= '$dtf' ORDER BY orders_id, sector;";
     } else {
-        $tipo = "RESUMO";
+        $tiporel = "RESUMO";
         $sql = "SELECT sector, type, quality, sum(net) as peso "
             . "FROM appoint "
             . "WHERE date >= '$dti' AND date <= '$dtf' "
@@ -49,6 +50,9 @@ if (!empty($dtini) && !empty($dtfim)) {
         //$dados[$i]['tipo'] = $lin['type'] == 1 ? 'APARA' : 'REFILE';
         $dados[$i]['qual'] = $lin['quality'] == 1 ? 'TRANSPARENTE' : ($lin['quality'] == 3 ? 'EVA' : 'COLORIDO'); 
         $dados[$i]['peso'] = isset($lin['net']) ? $lin['net'] : $lin['peso'];
+        $dados[$i]['cliente'] = isset($lin['customer']) ? $lin['customer'] : '';
+        $dados[$i]['codigo'] = isset($lin['code']) ? $lin['code'] : '';
+        $dados[$i]['desc'] = isset($lin['description']) ? $lin['description'] : '';
         
         $tipo = $lin['type'];
         switch ($tipo) {
@@ -84,7 +88,7 @@ if (!empty($dtini) && !empty($dtfim)) {
     
     $sheet->setCellValue('B2', 'Relatório de Sucata');
     $sheet->setCellValue('B3', "Período: " . (new Carbon($dtini))->format('d/m/Y') . " até " . (new Carbon($dtfim))->format('d/m/Y'));
-    $sheet->setCellValue('B4', $tipo);
+    $sheet->setCellValue('B4', $tiporel);
     
     $styleArray = [
         'font' => [
@@ -101,6 +105,7 @@ if (!empty($dtini) && !empty($dtfim)) {
     
     
     if (!$complete) {
+        
         $sheet->setCellValue('B6', 'Setor');
         $sheet->setCellValue('C6', 'Tipo');
         $sheet->setCellValue('D6', 'Qualidade');
@@ -123,28 +128,41 @@ if (!empty($dtini) && !empty($dtfim)) {
     } else {
         $sheet->setCellValue('B6', 'Data');
         $sheet->setCellValue('C6', 'OP');
-        $sheet->setCellValue('D6', 'Setor');
-        $sheet->setCellValue('E6', 'Tipo');
-        $sheet->setCellValue('F6', 'Qualidade');
-        $sheet->setCellValue('G6', 'Peso');
+        
+        $sheet->setCellValue('D6', 'Cliente');
+        $sheet->setCellValue('E6', 'Codigo');
+        $sheet->setCellValue('F6', 'Descrição');
+        
+        $sheet->setCellValue('G6', 'Setor');
+        $sheet->setCellValue('H6', 'Tipo');
+        $sheet->setCellValue('I6', 'Qualidade');
+        $sheet->setCellValue('J6', 'Peso');
         $i = 7;
         foreach($dados as $d) {
             $c = new Carbon($d['data']);
             $sheet->setCellValue("B{$i}", $c->format('d/m/Y'));
             $sheet->setCellValue("C{$i}", $d['op']);
-            $sheet->setCellValue("D{$i}", $d['setor']);
-            $sheet->setCellValue("E{$i}", $d['tipo']);
-            $sheet->setCellValue("F{$i}", $d['qual']);
-            $sheet->setCellValue("G{$i}", $d['peso']);
+            
+            $sheet->setCellValue("D{$i}", $d['cliente']);
+            $sheet->setCellValue("E{$i}", $d['codigo']);
+            $sheet->setCellValue("F{$i}", $d['desc']);
+            
+            $sheet->setCellValue("G{$i}", $d['setor']);
+            $sheet->setCellValue("H{$i}", $d['tipo']);
+            $sheet->setCellValue("I{$i}", $d['qual']);
+            $sheet->setCellValue("J{$i}", $d['peso']);
             $i++;
         }
-        $sheet->getStyle("G7:G{$i}")
+        $sheet->getStyle("J7:J{$i}")
             ->getNumberFormat()
             ->setFormatCode('#,##0.0 "kg"');
-        $sheet->getStyle("B6:F{$i}")
+        $sheet->getStyle("B6:E{$i}")
             ->getAlignment()
             ->setHorizontal(Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle('B6:G6')->applyFromArray($styleArray);
+        $sheet->getStyle("G6:I{$i}")
+            ->getAlignment()
+            ->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('B6:J6')->applyFromArray($styleArray);
     }
 
     
